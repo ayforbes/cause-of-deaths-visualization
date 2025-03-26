@@ -1,4 +1,3 @@
-/* styles.css */
 
 h1 {
   font-family: 'Georgia', serif;
@@ -8,7 +7,6 @@ h1 {
   margin-bottom: 20px;
 }
 
-/* Style for all labels in the controls section */
 #controls label {
   font-family: 'Georgia', serif; 
   font-size: 20px;   
@@ -45,7 +43,7 @@ body {
 }
 
 select#causeSelect {
-  background-color: #f0f0f0;  /* Light grey background */
+  background-color: #f0f0f0; 
   color: #000000;         
   font-size: 16px;
   padding: 5px 10px;
