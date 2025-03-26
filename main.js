@@ -1,3 +1,5 @@
+//note: I know this isn't completely static but i already made progress on my 
+//visualization following my M3 feedback. I hope it's still acceptable
 
 const width = 1500;
 const height = 900;
@@ -59,92 +61,75 @@ Promise.all([
     .attr("fill", "#ccc")
     .attr("stroke", "#333");
 
-  function updateBubbles(selectedCause, selectedYear) {
-    // filter
-    const yearData = allData.filter(d => d.Year === selectedYear);
+    function updateBubbles(selectedCause, selectedYear) {
+      // filter on year 
+      const yearData = allData.filter(d => d.Year === selectedYear);
+    
+      //max value for scaling bubbles
+      const maxValue = d3.max(yearData, d => d[selectedCause]);
+      const radiusScale = d3.scaleSqrt()
+        .domain([0, maxValue])
+        .range([0, 60]);
+    
+      const bubbles = svg.selectAll(".bubble")
+        .data(yearData, d => d.Code);
+    
+      bubbles.exit().remove();
+    
+      const bubblesEnter = bubbles.enter()
+        .append("circle")
+        .attr("class", "bubble")
+        .attr("cx", d => {
+          const feature = world.features.find(f => f.id === d.Code || (f.properties && f.properties.iso_a3 === d.Code));
+          return feature ? path.centroid(feature)[0] : -100;
+        })
+        .attr("cy", d => {
+          const feature = world.features.find(f => f.id === d.Code || (f.properties && f.properties.iso_a3 === d.Code));
+          return feature ? path.centroid(feature)[1] : -100;
+        })
+        .attr("r", d => radiusScale(d[selectedCause]))
+        .attr("fill", "rgba(70, 70, 70, 0.7)")
+        .attr("stroke", "#fff");
+    
+      bubblesEnter.merge(bubbles)
+        .on("mouseover", function(event, d) {
+          d3.select(this).attr("stroke", "black");
+          tooltip.transition().duration(200).style("opacity", 0.9);
+          tooltip.html(`<strong>${d["Country/Territory"]}</strong><br>
+                        ${selectedCause}: ${d[selectedCause]}<br>
+                        Year: ${d.Year}`)
+            .style("left", (event.pageX + 5) + "px")
+            .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function() {
+          d3.select(this).attr("stroke", "#fff");
+          tooltip.transition().duration(500).style("opacity", 0);
+        })
+        .transition()
+        .duration(750)
+        .attr("r", d => radiusScale(d[selectedCause]))
+        .attr("cx", d => {
+          const feature = world.features.find(f => f.id === d.Code || (f.properties && f.properties.iso_a3 === d.Code));
+          return feature ? path.centroid(feature)[0] : -100;
+        })
+        .attr("cy", d => {
+          const feature = world.features.find(f => f.id === d.Code || (f.properties && f.properties.iso_a3 === d.Code));
+          return feature ? path.centroid(feature)[1] : -100;
+        });
+    }
+    
 
-    // max value for scaling the bubbles
-    const maxValue = d3.max(yearData, d => d[selectedCause]);
-
-    const radiusScale = d3.scaleSqrt()
-      .domain([0, maxValue])
-      .range([0, 40]);
-    const bubbles = svg.selectAll(".bubble")
-      .data(yearData, d => d.Code);
-
-    bubbles.exit().remove();
-
-    bubbles.enter()
-      .append("circle")
-      .attr("class", "bubble")
-      .attr("cx", d => {
-        const feature = world.features.find(f => f.id === d.Code || (f.properties && f.properties.iso_a3 === d.Code));
-        if (feature) {
-          const centroid = path.centroid(feature);
-          return centroid[0];
-        }
-        return -100; // if no matching feature, position off-map
-      })
-      .attr("cy", d => {
-        const feature = world.features.find(f => f.id === d.Code || (f.properties && f.properties.iso_a3 === d.Code));
-        if (feature) {
-          const centroid = path.centroid(feature);
-          return centroid[1];
-        }
-        return -100;
-      })
-      .attr("r", d => radiusScale(d[selectedCause]))
-      .attr("fill", "rgba(217,91,67,0.7)")
-      .attr("stroke", "#fff")
-      .on("mouseover", function(event, d) {
-         d3.select(this).attr("stroke", "black");
-         tooltip.transition().duration(200).style("opacity", 0.9);
-         tooltip.html(`<strong>${d["Country/Territory"]}</strong><br>
-                       ${selectedCause}: ${d[selectedCause]}<br>
-                       Year: ${d.Year}`)
-           .style("left", (event.pageX + 5) + "px")
-           .style("top", (event.pageY - 28) + "px");
-      })
-      .on("mouseout", function() {
-         d3.select(this).attr("stroke", "#fff");
-         tooltip.transition().duration(500).style("opacity", 0);
-      });
-
-    // transitions
-    bubbles.transition()
-      .duration(750)
-      .attr("r", d => radiusScale(d[selectedCause]))
-      .attr("cx", d => {
-        const feature = world.features.find(f => f.id === d.Code || (f.properties && f.properties.iso_a3 === d.Code));
-        if (feature) {
-          const centroid = path.centroid(feature);
-          return centroid[0];
-        }
-        return -100;
-      })
-      .attr("cy", d => {
-        const feature = world.features.find(f => f.id === d.Code || (f.properties && f.properties.iso_a3 === d.Code));
-        if (feature) {
-          const centroid = path.centroid(feature);
-          return centroid[1];
-        }
-        return -100;
-      });
-  }
-
-  // Get the current selections from the dropdown and slider,
-  // and update the visualization initially with the default values.
   const initialYear = +d3.select("#yearSlider").property("value");
   updateBubbles(causeColumns[0], initialYear);
 
-  // Update bubbles when the dropdown selection changes
+  // update on dropdown select
   dropdown.on("change", function(event) {
     const selectedCause = event.target.value;
     const selectedYear = +d3.select("#yearSlider").property("value");
     updateBubbles(selectedCause, selectedYear);
   });
 
-  // Update bubbles on slider
+  // update on slider
   d3.select("#yearSlider").on("input", function(event) {
     const selectedYear = +this.value;
     d3.select("#yearLabel").text(selectedYear);

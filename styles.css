@@ -1,12 +1,26 @@
+/* styles.css */
+
+h1 {
+  font-family: 'Georgia', serif;
+  font-size: 48px;
+  color: #f9f9f9;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Style for all labels in the controls section */
+#controls label {
+  font-family: 'Georgia', serif; 
+  font-size: 20px;   
+  color: #ffffff;   
+  margin-right: 10px;              
+}
+
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 20px;
-  background-color: #f7f7f7;
-}
-
-h1 {
-  text-align: center;
+  background-color: #491f1f;
 }
 
 #controls {
@@ -29,3 +43,24 @@ h1 {
   pointer-events: none;
   font-size: 12px;
 }
+
+select#causeSelect {
+  background-color: #f0f0f0;  /* Light grey background */
+  color: #000000;         
+  font-size: 16px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  appearance: none;
+}
+
+input[type="range"] {
+  width: 300px;
+  height: 8px;
+  background: #ffffff;
+  border-radius: 5px;
+  outline: none;
+  margin: 0;
+}
+
+
